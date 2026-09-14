@@ -1,4 +1,5 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
+import { useState } from 'react';
 
 import type { TIngredient } from '@utils/types';
 
@@ -11,25 +12,36 @@ type TBurgerIngredientsProps = {
 export const BurgerIngredients = ({
   ingredients,
 }: TBurgerIngredientsProps): React.JSX.Element => {
+  const [activeTab, setActiveTab] = useState('bun');
+
   const groups = [
     { title: 'Булки', type: 'bun' },
     { title: 'Соусы', type: 'sauce' },
     { title: 'Начинки', type: 'main' },
   ];
 
+  const scrollToGroup = (type: string): void => {
+    setActiveTab(type);
+    document
+      .getElementById(`ingredients-${type}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <section className={styles.burger_ingredients}>
-      <nav>
+      <nav className={styles.navigation} aria-label="Категории ингредиентов">
         <ul className={styles.menu}>
-          <Tab value="bun" active={true} onClick={() => {}}>
-            Булки
-          </Tab>
-          <Tab value="main" active={false} onClick={() => {}}>
-            Начинки
-          </Tab>
-          <Tab value="sauce" active={false} onClick={() => {}}>
-            Соусы
-          </Tab>
+          {groups.map((group) => (
+            <li key={group.type} className={styles.menu_item}>
+              <Tab
+                value={group.type}
+                active={activeTab === group.type}
+                onClick={() => scrollToGroup(group.type)}
+              >
+                {group.title}
+              </Tab>
+            </li>
+          ))}
         </ul>
       </nav>
       <div className={`${styles.ingredients} custom-scroll`}>
