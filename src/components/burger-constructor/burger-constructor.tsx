@@ -79,7 +79,7 @@ export const BurgerConstructor = ({
       <div className={`${styles.fillings} custom-scroll`}>
         {fillings.map(({ ingredient, index: ingredientIndex }, index) => (
           <div
-            key={ingredient._id}
+            key={`${ingredient._id}-${ingredientIndex}`}
             className={styles.filling}
             draggable
             onDragStart={() => handleDragStart(index)}
