@@ -34,11 +34,6 @@ export const App = (): React.JSX.Element => {
       })
       .then(({ data }) => {
         setIngredients(data);
-        const bun = data.find((ingredient) => ingredient.type === 'bun');
-        setConstructorIngredients([
-          ...(bun ? [bun] : []),
-          ...data.filter((ingredient) => ingredient.type !== 'bun'),
-        ]);
       })
       .catch((requestError: unknown) => {
         setError(
