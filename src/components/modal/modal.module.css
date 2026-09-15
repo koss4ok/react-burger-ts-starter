@@ -1,0 +1,35 @@
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 11;
+  width: 720px;
+  padding: 40px;
+  color: var(--text-primary-color);
+  background-color: var(--background);
+  border-radius: 40px;
+  transform: translate(-50%, -50%);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 64px;
+}
+
+.close {
+  display: flex;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+@media (width <= 760px) {
+  .modal {
+    width: calc(100% - 32px);
+    padding: 24px;
+    border-radius: 24px;
+  }
+}
