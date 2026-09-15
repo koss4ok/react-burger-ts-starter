@@ -9,12 +9,14 @@ type TBurgerIngredientsProps = {
   ingredients: TIngredient[];
   selectedIngredients: TIngredient[];
   onAddIngredient: (ingredient: TIngredient) => void;
+  onIngredientClick: (ingredient: TIngredient) => void;
 };
 
 export const BurgerIngredients = ({
   ingredients,
   selectedIngredients,
   onAddIngredient,
+  onIngredientClick,
 }: TBurgerIngredientsProps): React.JSX.Element => {
   const [activeTab, setActiveTab] = useState('bun');
 
@@ -36,6 +38,7 @@ export const BurgerIngredients = ({
 
   const handleIngredientClick = (ingredient: TIngredient): void => {
     onAddIngredient(ingredient);
+    onIngredientClick(ingredient);
   };
 
   return (

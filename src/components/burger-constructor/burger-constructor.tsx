@@ -14,12 +14,14 @@ type TBurgerConstructorProps = {
   ingredients: TIngredient[];
   onRemoveIngredient: (index: number) => void;
   onReorderIngredients: (ingredients: TIngredient[]) => void;
+  onOrderClick: () => void;
 };
 
 export const BurgerConstructor = ({
   ingredients,
   onRemoveIngredient,
   onReorderIngredients,
+  onOrderClick,
 }: TBurgerConstructorProps): React.JSX.Element => {
   const bun = ingredients.find((ingredient) => ingredient.type === 'bun');
   const fillings = ingredients
@@ -113,7 +115,7 @@ export const BurgerConstructor = ({
           <span className="text text_type_digits-medium">{totalPrice}</span>
           <CurrencyIcon type="primary" />
         </div>
-        <Button htmlType="button" type="primary" size="large">
+        <Button htmlType="button" type="primary" size="large" onClick={onOrderClick}>
           Оформить заказ
         </Button>
       </div>
