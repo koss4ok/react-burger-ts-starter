@@ -7,7 +7,7 @@ import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredi
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
-import { API_URL } from '@utils/constants';
+import { getIngredients } from '@utils/api';
 
 import type { TIngredient } from '@utils/types';
 
@@ -24,15 +24,8 @@ export const App = (): React.JSX.Element => {
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_URL}/ingredients`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Ошибка загрузки ингредиентов: ${response.status}`);
-        }
-
-        return response.json() as Promise<{ data: TIngredient[] }>;
-      })
-      .then(({ data }) => {
+    getIngredients()
+      .then((data) => {
         setIngredients(data);
       })
       .catch((requestError: unknown) => {
