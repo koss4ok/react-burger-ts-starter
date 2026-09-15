@@ -48,6 +48,24 @@
   text-align: center;
 }
 
+.card_clickable {
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+
+.card_clickable:hover {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 0 12px rgb(128 77 255 / 35%));
+}
+
+.card_clickable:focus-visible {
+  border-radius: 8px;
+  outline: 2px solid var(--colors-interface-accent);
+  outline-offset: 6px;
+}
+
 .image {
   display: block;
   width: 100%;
