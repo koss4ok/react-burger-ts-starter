@@ -7,10 +7,14 @@ import styles from './burger-ingredients.module.css';
 
 type TBurgerIngredientsProps = {
   ingredients: TIngredient[];
+  selectedIngredients: TIngredient[];
+  onAddIngredient: (ingredient: TIngredient) => void;
 };
 
 export const BurgerIngredients = ({
   ingredients,
+  selectedIngredients,
+  onAddIngredient,
 }: TBurgerIngredientsProps): React.JSX.Element => {
   const [activeTab, setActiveTab] = useState('bun');
 
@@ -25,6 +29,13 @@ export const BurgerIngredients = ({
     document
       .getElementById(`ingredients-${type}`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const getIngredientCount = (id: string): number =>
+    selectedIngredients.filter((ingredient) => ingredient._id === id).length;
+
+  const handleIngredientClick = (ingredient: TIngredient): void => {
+    onAddIngredient(ingredient);
   };
 
   return (
@@ -64,9 +75,25 @@ export const BurgerIngredients = ({
                 {group.title}
               </h2>
               <ul className={styles.cards}>
-                {groupIngredients.map((ingredient, index) => (
-                  <li key={ingredient._id} className={styles.card}>
-                    {index === 0 && <Counter count={1} size="default" />}
+                {groupIngredients.map((ingredient) => (
+                  <li
+                    key={ingredient._id}
+                    className={`${styles.card} ${styles.card_clickable}`}
+                    onClick={() => handleIngredientClick(ingredient)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        handleIngredientClick(ingredient);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    {getIngredientCount(ingredient._id) > 0 && (
+                      <Counter
+                        count={getIngredientCount(ingredient._id)}
+                        size="default"
+                      />
+                    )}
                     <img
                       className={styles.image}
                       src={ingredient.image_large}
