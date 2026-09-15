@@ -37,7 +37,6 @@ export const BurgerIngredients = ({
     selectedIngredients.filter((ingredient) => ingredient._id === id).length;
 
   const handleIngredientClick = (ingredient: TIngredient): void => {
-    onAddIngredient(ingredient);
     onIngredientClick(ingredient);
   };
 
@@ -82,14 +81,6 @@ export const BurgerIngredients = ({
                   <li
                     key={ingredient._id}
                     className={`${styles.card} ${styles.card_clickable}`}
-                    onClick={() => handleIngredientClick(ingredient)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        handleIngredientClick(ingredient);
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
                   >
                     {getIngredientCount(ingredient._id) > 0 && (
                       <Counter
@@ -97,20 +88,37 @@ export const BurgerIngredients = ({
                         size="default"
                       />
                     )}
-                    <img
-                      className={styles.image}
-                      src={ingredient.image_large}
-                      alt={ingredient.name}
-                    />
-                    <div className={styles.price}>
-                      <span className="text text_type_digits-default">
-                        {ingredient.price}
-                      </span>
-                      <CurrencyIcon type="primary" />
-                    </div>
-                    <p className={`${styles.name} text text_type_main-default`}>
-                      {ingredient.name}
-                    </p>
+                    <button
+                      className={styles.card_content}
+                      type="button"
+                      onClick={() => handleIngredientClick(ingredient)}
+                    >
+                      <img
+                        className={styles.image}
+                        src={ingredient.image_large}
+                        alt={ingredient.name}
+                      />
+                      <div className={styles.price}>
+                        <span className="text text_type_digits-default">
+                          {ingredient.price}
+                        </span>
+                        <CurrencyIcon type="primary" />
+                      </div>
+                      <p className={`${styles.name} text text_type_main-default`}>
+                        {ingredient.name}
+                      </p>
+                    </button>
+                    <button
+                      className={styles.add_button}
+                      type="button"
+                      aria-label={`Добавить ${ingredient.name}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onAddIngredient(ingredient);
+                      }}
+                    >
+                      +
+                    </button>
                   </li>
                 ))}
               </ul>
