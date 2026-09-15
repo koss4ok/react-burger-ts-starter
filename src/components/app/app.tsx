@@ -1,25 +1,49 @@
-import { useState } from 'react';
+import { Preloader } from '@krgaa/react-developer-burger-ui-components';
+import { useEffect, useState } from 'react';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { BurgerConstructor } from '@components/burger-constructor/burger-constructor';
 import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredients';
-import { ingredients } from '@utils/ingredients';
+import { API_URL } from '@utils/constants';
 
 import type { TIngredient } from '@utils/types';
 
 import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
+  const [ingredients, setIngredients] = useState<TIngredient[]>([]);
   const [constructorIngredients, setConstructorIngredients] = useState<TIngredient[]>(
-    () => {
-      const bun = ingredients.find((ingredient) => ingredient.type === 'bun');
-
-      return [
-        ...(bun ? [bun] : []),
-        ...ingredients.filter((ingredient) => ingredient.type !== 'bun'),
-      ];
-    }
+    []
   );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_URL}/ingredients`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Ошибка загрузки ингредиентов: ${response.status}`);
+        }
+
+        return response.json() as Promise<{ data: TIngredient[] }>;
+      })
+      .then(({ data }) => {
+        setIngredients(data);
+        const bun = data.find((ingredient) => ingredient.type === 'bun');
+        setConstructorIngredients([
+          ...(bun ? [bun] : []),
+          ...data.filter((ingredient) => ingredient.type !== 'bun'),
+        ]);
+      })
+      .catch((requestError: unknown) => {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : 'Не удалось загрузить ингредиенты'
+        );
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const addIngredient = (ingredient: TIngredient): void => {
     setConstructorIngredients((currentIngredients) => {
@@ -45,6 +69,14 @@ export const App = (): React.JSX.Element => {
   const reorderIngredients = (nextIngredients: TIngredient[]): void => {
     setConstructorIngredients(nextIngredients);
   };
+
+  if (isLoading) {
+    return <Preloader />;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
+  }
 
   return (
     <div className={styles.app}>
