@@ -1,5 +1,5 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { BurgerConstructor } from '@components/burger-constructor/burger-constructor';
@@ -38,7 +38,7 @@ export const App = (): React.JSX.Element => {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const addIngredient = (ingredient: TIngredient): void => {
+  const addIngredient = useCallback((ingredient: TIngredient): void => {
     setConstructorIngredients((currentIngredients) => {
       if (ingredient.type === 'bun') {
         return [
@@ -51,20 +51,25 @@ export const App = (): React.JSX.Element => {
 
       return [...currentIngredients, ingredient];
     });
-  };
+  }, []);
 
-  const removeIngredient = (index: number): void => {
+  const removeIngredient = useCallback((index: number): void => {
     setConstructorIngredients((currentIngredients) =>
       currentIngredients.filter((_, ingredientIndex) => ingredientIndex !== index)
     );
-  };
+  }, []);
 
-  const reorderIngredients = (nextIngredients: TIngredient[]): void => {
+  const reorderIngredients = useCallback((nextIngredients: TIngredient[]): void => {
     setConstructorIngredients(nextIngredients);
-  };
+  }, []);
 
-  const closeIngredientModal = (): void => setSelectedIngredient(null);
-  const closeOrderModal = (): void => setIsOrderModalOpen(false);
+  const selectIngredient = useCallback(
+    (ingredient: TIngredient): void => setSelectedIngredient(ingredient),
+    []
+  );
+  const closeIngredientModal = useCallback((): void => setSelectedIngredient(null), []);
+  const closeOrderModal = useCallback((): void => setIsOrderModalOpen(false), []);
+  const openOrderModal = useCallback((): void => setIsOrderModalOpen(true), []);
 
   if (isLoading) {
     return <Preloader />;
@@ -85,13 +90,13 @@ export const App = (): React.JSX.Element => {
           ingredients={ingredients}
           selectedIngredients={constructorIngredients}
           onAddIngredient={addIngredient}
-          onIngredientClick={setSelectedIngredient}
+          onIngredientClick={selectIngredient}
         />
         <BurgerConstructor
           ingredients={constructorIngredients}
           onRemoveIngredient={removeIngredient}
           onReorderIngredients={reorderIngredients}
-          onOrderClick={() => setIsOrderModalOpen(true)}
+          onOrderClick={openOrderModal}
         />
       </main>
       {selectedIngredient && (

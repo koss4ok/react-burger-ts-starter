@@ -4,7 +4,7 @@ import {
   CurrencyIcon,
   DragIcon,
 } from '@krgaa/react-developer-burger-ui-components';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { TIngredient } from '@utils/types';
 
@@ -23,44 +23,63 @@ export const BurgerConstructor = ({
   onReorderIngredients,
   onOrderClick,
 }: TBurgerConstructorProps): React.JSX.Element => {
-  const bun = ingredients.find((ingredient) => ingredient.type === 'bun');
-  const fillings = ingredients
-    .map((ingredient, index) => ({ ingredient, index }))
-    .filter(({ ingredient }) => ingredient.type !== 'bun');
+  const bun = useMemo(
+    () => ingredients.find((ingredient) => ingredient.type === 'bun'),
+    [ingredients]
+  );
+  const fillings = useMemo(
+    () =>
+      ingredients
+        .map((ingredient, index) => ({ ingredient, index }))
+        .filter(({ ingredient }) => ingredient.type !== 'bun'),
+    [ingredients]
+  );
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const totalPrice =
-    (bun ? bun.price * 2 : 0) +
-    fillings.reduce((total, { ingredient }) => total + ingredient.price, 0);
+  const totalPrice = useMemo(
+    () =>
+      (bun ? bun.price * 2 : 0) +
+      fillings.reduce((total, { ingredient }) => total + ingredient.price, 0),
+    [bun, fillings]
+  );
 
-  const removeFilling = (index: number): void => {
-    onRemoveIngredient(index);
-  };
+  const removeFilling = useCallback(
+    (index: number): void => {
+      onRemoveIngredient(index);
+    },
+    [onRemoveIngredient]
+  );
 
-  const moveFilling = (fromIndex: number, toIndex: number): void => {
-    if (fromIndex === toIndex) {
-      return;
-    }
+  const moveFilling = useCallback(
+    (fromIndex: number, toIndex: number): void => {
+      if (fromIndex === toIndex) {
+        return;
+      }
 
-    const nextFillings = fillings.map(({ ingredient }) => ingredient);
-    const [movedFilling] = nextFillings.splice(fromIndex, 1);
+      const nextFillings = fillings.map(({ ingredient }) => ingredient);
+      const [movedFilling] = nextFillings.splice(fromIndex, 1);
 
-    if (movedFilling) {
-      nextFillings.splice(toIndex, 0, movedFilling);
-      onReorderIngredients(bun ? [bun, ...nextFillings] : nextFillings);
-    }
-  };
+      if (movedFilling) {
+        nextFillings.splice(toIndex, 0, movedFilling);
+        onReorderIngredients(bun ? [bun, ...nextFillings] : nextFillings);
+      }
+    },
+    [bun, fillings, onReorderIngredients]
+  );
 
-  const handleDragStart = (index: number): void => {
+  const handleDragStart = useCallback((index: number): void => {
     setDraggedIndex(index);
-  };
+  }, []);
 
-  const handleDrop = (index: number): void => {
-    if (draggedIndex !== null) {
-      moveFilling(draggedIndex, index);
-    }
+  const handleDrop = useCallback(
+    (index: number): void => {
+      if (draggedIndex !== null) {
+        moveFilling(draggedIndex, index);
+      }
 
-    setDraggedIndex(null);
-  };
+      setDraggedIndex(null);
+    },
+    [draggedIndex, moveFilling]
+  );
 
   return (
     <section className={styles.burger_constructor}>

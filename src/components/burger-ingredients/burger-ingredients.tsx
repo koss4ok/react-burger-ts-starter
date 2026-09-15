@@ -1,5 +1,5 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { TIngredient } from '@utils/types';
 
@@ -12,6 +12,12 @@ type TBurgerIngredientsProps = {
   onIngredientClick: (ingredient: TIngredient) => void;
 };
 
+const groups = [
+  { title: 'Булки', type: 'bun' },
+  { title: 'Соусы', type: 'sauce' },
+  { title: 'Начинки', type: 'main' },
+];
+
 export const BurgerIngredients = ({
   ingredients,
   selectedIngredients,
@@ -20,25 +26,37 @@ export const BurgerIngredients = ({
 }: TBurgerIngredientsProps): React.JSX.Element => {
   const [activeTab, setActiveTab] = useState('bun');
 
-  const groups = [
-    { title: 'Булки', type: 'bun' },
-    { title: 'Соусы', type: 'sauce' },
-    { title: 'Начинки', type: 'main' },
-  ];
+  const ingredientGroups = useMemo(
+    () =>
+      groups.map((group) => ({
+        ...group,
+        ingredients: ingredients.filter((ingredient) => ingredient.type === group.type),
+      })),
+    [ingredients]
+  );
+  const ingredientCounts = useMemo(() => {
+    const counts = new Map<string, number>();
 
-  const scrollToGroup = (type: string): void => {
+    selectedIngredients.forEach((ingredient) => {
+      counts.set(ingredient._id, (counts.get(ingredient._id) ?? 0) + 1);
+    });
+
+    return counts;
+  }, [selectedIngredients]);
+
+  const scrollToGroup = useCallback((type: string): void => {
     setActiveTab(type);
     document
       .getElementById(`ingredients-${type}`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  }, []);
 
-  const getIngredientCount = (id: string): number =>
-    selectedIngredients.filter((ingredient) => ingredient._id === id).length;
-
-  const handleIngredientClick = (ingredient: TIngredient): void => {
-    onIngredientClick(ingredient);
-  };
+  const handleIngredientClick = useCallback(
+    (ingredient: TIngredient): void => {
+      onIngredientClick(ingredient);
+    },
+    [onIngredientClick]
+  );
 
   return (
     <section className={styles.burger_ingredients}>
@@ -58,11 +76,7 @@ export const BurgerIngredients = ({
         </ul>
       </nav>
       <div className={`${styles.ingredients} custom-scroll`}>
-        {groups.map((group) => {
-          const groupIngredients = ingredients.filter(
-            (ingredient) => ingredient.type === group.type
-          );
-
+        {ingredientGroups.map((group) => {
           return (
             <section
               key={group.type}
@@ -77,14 +91,14 @@ export const BurgerIngredients = ({
                 {group.title}
               </h2>
               <ul className={styles.cards}>
-                {groupIngredients.map((ingredient) => (
+                {group.ingredients.map((ingredient) => (
                   <li
                     key={ingredient._id}
                     className={`${styles.card} ${styles.card_clickable}`}
                   >
-                    {getIngredientCount(ingredient._id) > 0 && (
+                    {(ingredientCounts.get(ingredient._id) ?? 0) > 0 && (
                       <Counter
-                        count={getIngredientCount(ingredient._id)}
+                        count={ingredientCounts.get(ingredient._id) ?? 0}
                         size="default"
                       />
                     )}
