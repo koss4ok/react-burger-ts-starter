@@ -22,8 +22,14 @@ export const Modal = ({ title, onClose, children }: TModalProps): React.JSX.Elem
 
     document.addEventListener('keydown', handleEscape);
 
-    return () => document.removeEventListener('keydown', handleEscape);
+    return (): void => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+
+  const modalsRoot = document.getElementById('modals');
+
+  if (!modalsRoot) {
+    throw new Error('Элемент #modals не найден');
+  }
 
   return createPortal(
     <>
@@ -52,6 +58,6 @@ export const Modal = ({ title, onClose, children }: TModalProps): React.JSX.Elem
         {children}
       </div>
     </>,
-    document.body
+    modalsRoot
   );
 };
