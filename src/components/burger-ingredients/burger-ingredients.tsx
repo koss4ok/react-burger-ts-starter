@@ -1,5 +1,5 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { TIngredient } from '@utils/types';
 
@@ -25,6 +25,8 @@ export const BurgerIngredients = ({
   onIngredientClick,
 }: TBurgerIngredientsProps): React.JSX.Element => {
   const [activeTab, setActiveTab] = useState('bun');
+  const ingredientsRef = useRef<HTMLDivElement>(null);
+  const headingRefs = useRef<Record<string, HTMLHeadingElement | null>>({});
 
   const ingredientGroups = useMemo(
     () =>
@@ -43,6 +45,49 @@ export const BurgerIngredients = ({
 
     return counts;
   }, [selectedIngredients]);
+
+  const updateActiveTab = useCallback((): void => {
+    const ingredientsElement = ingredientsRef.current;
+
+    if (!ingredientsElement) {
+      return;
+    }
+
+    const ingredientsTop = ingredientsElement.getBoundingClientRect().top;
+    const closestGroup = ingredientGroups.reduce<{
+      type: string;
+      distance: number;
+    } | null>((closest, group) => {
+      const heading = headingRefs.current[group.type];
+
+      if (!heading) {
+        return closest;
+      }
+
+      const distance = Math.abs(heading.getBoundingClientRect().top - ingredientsTop);
+
+      return !closest || distance < closest.distance
+        ? { type: group.type, distance }
+        : closest;
+    }, null);
+
+    if (closestGroup) {
+      setActiveTab(closestGroup.type);
+    }
+  }, [ingredientGroups]);
+
+  useEffect(() => {
+    const ingredientsElement = ingredientsRef.current;
+
+    if (!ingredientsElement) {
+      return;
+    }
+
+    updateActiveTab();
+    ingredientsElement.addEventListener('scroll', updateActiveTab);
+
+    return (): void => ingredientsElement.removeEventListener('scroll', updateActiveTab);
+  }, [updateActiveTab]);
 
   const scrollToGroup = useCallback((type: string): void => {
     setActiveTab(type);
@@ -75,7 +120,7 @@ export const BurgerIngredients = ({
           ))}
         </ul>
       </nav>
-      <div className={`${styles.ingredients} custom-scroll`}>
+      <div ref={ingredientsRef} className={`${styles.ingredients} custom-scroll`}>
         {ingredientGroups.map((group) => {
           return (
             <section
@@ -85,6 +130,9 @@ export const BurgerIngredients = ({
               aria-labelledby={`ingredients-title-${group.type}`}
             >
               <h2
+                ref={(heading): void => {
+                  headingRefs.current[group.type] = heading;
+                }}
                 id={`ingredients-title-${group.type}`}
                 className="text text_type_main-medium mt-10 mb-6"
               >
