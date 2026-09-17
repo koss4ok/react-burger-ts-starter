@@ -1,0 +1,40 @@
+import { API_URL } from '@utils/constants';
+
+import type { TIngredient } from '@utils/types';
+
+type TIngredientsResponse = {
+  data: TIngredient[];
+};
+
+export type TOrderResponse = {
+  name: string;
+  order: {
+    number: number;
+  };
+  success: boolean;
+};
+
+export const fetchIngredients = async (): Promise<TIngredient[]> => {
+  const response = await fetch(`${API_URL}/ingredients`);
+
+  if (!response.ok) {
+    throw new Error(`Ошибка загрузки ингредиентов: ${response.status}`);
+  }
+
+  const data = (await response.json()) as TIngredientsResponse;
+  return data.data;
+};
+
+export const createOrder = async (ingredients: string[]): Promise<TOrderResponse> => {
+  const response = await fetch(`${API_URL}/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ingredients }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Ошибка создания заказа: ${response.status}`);
+  }
+
+  return (await response.json()) as TOrderResponse;
+};

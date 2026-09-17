@@ -17,8 +17,12 @@ const ingredientSlice = createSlice({
     setSelectedIngredient: (state, action: PayloadAction<TIngredient | null>) => {
       state.selectedIngredient = action.payload;
     },
+    clearSelectedIngredient: (state) => {
+      state.selectedIngredient = null;
+    },
   },
 });
 
-export const { setSelectedIngredient } = ingredientSlice.actions;
+export const { clearSelectedIngredient, setSelectedIngredient } =
+  ingredientSlice.actions;
 export default ingredientSlice.reducer;

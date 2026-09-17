@@ -1,5 +1,5 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { AppHeader } from '@components/app-header/app-header';
@@ -8,8 +8,17 @@ import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredi
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
-import { useCreateOrderMutation, useGetIngredientsQuery } from '@services/burger-api';
-import { setSelectedIngredient } from '@services/ingredient-slice';
+import {
+  addIngredient as addConstructorIngredient,
+  removeIngredient,
+  reorderIngredients,
+} from '@services/constructor-slice';
+import {
+  clearSelectedIngredient,
+  setSelectedIngredient,
+} from '@services/ingredient-slice';
+import { loadIngredients } from '@services/ingredients-slice';
+import { clearOrder, submitOrder } from '@services/order-slice';
 
 import type { AppDispatch, RootState } from '@services/store';
 import type { TIngredient } from '@utils/types';
@@ -17,43 +26,46 @@ import type { TIngredient } from '@utils/types';
 import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
-  const { data: ingredients = [], isLoading, error } = useGetIngredientsQuery();
-  const [createOrder, { isLoading: isOrderLoading, error: orderError }] =
-    useCreateOrderMutation();
   const dispatch = useDispatch<AppDispatch>();
+  const ingredients = useSelector((state: RootState) => state.ingredients.items);
+  const { isLoading, error } = useSelector((state: RootState) => state.ingredients);
+  const constructorIngredients = useSelector(
+    (state: RootState) => state.constructor.items
+  );
   const selectedIngredient = useSelector(
     (state: RootState) => state.ingredient.selectedIngredient
   );
-  const [constructorIngredients, setConstructorIngredients] = useState<TIngredient[]>(
-    []
-  );
+  const {
+    number: orderNumber,
+    isLoading: isOrderLoading,
+    error: orderError,
+  } = useSelector((state: RootState) => state.order);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-  const [orderNumber, setOrderNumber] = useState<number | null>(null);
 
-  const addIngredient = useCallback((ingredient: TIngredient): void => {
-    setConstructorIngredients((currentIngredients) => {
-      if (ingredient.type === 'bun') {
-        return [
-          ingredient,
-          ...currentIngredients.filter(
-            (currentIngredient) => currentIngredient.type !== 'bun'
-          ),
-        ];
-      }
+  useEffect(() => {
+    void dispatch(loadIngredients());
+  }, [dispatch]);
 
-      return [...currentIngredients, ingredient];
-    });
-  }, []);
+  const addIngredient = useCallback(
+    (ingredient: TIngredient): void => {
+      dispatch(addConstructorIngredient(ingredient));
+    },
+    [dispatch]
+  );
 
-  const removeIngredient = useCallback((index: number): void => {
-    setConstructorIngredients((currentIngredients) =>
-      currentIngredients.filter((_, ingredientIndex) => ingredientIndex !== index)
-    );
-  }, []);
+  const removeConstructorIngredient = useCallback(
+    (index: number): void => {
+      dispatch(removeIngredient(index));
+    },
+    [dispatch]
+  );
 
-  const reorderIngredients = useCallback((nextIngredients: TIngredient[]): void => {
-    setConstructorIngredients(nextIngredients);
-  }, []);
+  const reorderConstructorIngredients = useCallback(
+    (nextIngredients: TIngredient[]): void => {
+      dispatch(reorderIngredients(nextIngredients));
+    },
+    [dispatch]
+  );
 
   const selectIngredient = useCallback(
     (ingredient: TIngredient): void => {
@@ -62,9 +74,12 @@ export const App = (): React.JSX.Element => {
     [dispatch]
   );
   const closeIngredientModal = useCallback((): void => {
-    dispatch(setSelectedIngredient(null));
+    dispatch(clearSelectedIngredient());
   }, [dispatch]);
-  const closeOrderModal = useCallback((): void => setIsOrderModalOpen(false), []);
+  const closeOrderModal = useCallback((): void => {
+    dispatch(clearOrder());
+    setIsOrderModalOpen(false);
+  }, [dispatch]);
   const openOrderModal = useCallback(async (): Promise<void> => {
     const bun = constructorIngredients.find((ingredient) => ingredient.type === 'bun');
 
@@ -73,22 +88,20 @@ export const App = (): React.JSX.Element => {
     }
 
     try {
-      const response = await createOrder({
-        ingredients: [
+      await dispatch(
+        submitOrder([
           bun._id,
           ...constructorIngredients
             .filter((ingredient) => ingredient.type !== 'bun')
             .map((ingredient) => ingredient._id),
           bun._id,
-        ],
-      }).unwrap();
-
-      setOrderNumber(response.order.number);
+        ])
+      ).unwrap();
       setIsOrderModalOpen(true);
     } catch {
       setIsOrderModalOpen(false);
     }
-  }, [constructorIngredients, createOrder, isOrderLoading]);
+  }, [constructorIngredients, dispatch, isOrderLoading]);
 
   if (isLoading) {
     return <Preloader />;
@@ -113,8 +126,8 @@ export const App = (): React.JSX.Element => {
         />
         <BurgerConstructor
           ingredients={constructorIngredients}
-          onRemoveIngredient={removeIngredient}
-          onReorderIngredients={reorderIngredients}
+          onRemoveIngredient={removeConstructorIngredient}
+          onReorderIngredients={reorderConstructorIngredients}
           onOrderClick={() => {
             void openOrderModal();
           }}
