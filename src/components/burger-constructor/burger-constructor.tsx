@@ -15,6 +15,7 @@ type TBurgerConstructorProps = {
   onRemoveIngredient: (index: number) => void;
   onReorderIngredients: (ingredients: TIngredient[]) => void;
   onOrderClick: () => void;
+  isOrderLoading: boolean;
 };
 
 export const BurgerConstructor = ({
@@ -22,6 +23,7 @@ export const BurgerConstructor = ({
   onRemoveIngredient,
   onReorderIngredients,
   onOrderClick,
+  isOrderLoading,
 }: TBurgerConstructorProps): React.JSX.Element => {
   const bun = useMemo(
     () => ingredients.find((ingredient) => ingredient.type === 'bun'),
@@ -134,7 +136,13 @@ export const BurgerConstructor = ({
           <span className="text text_type_digits-medium">{totalPrice}</span>
           <CurrencyIcon type="primary" />
         </div>
-        <Button htmlType="button" type="primary" size="large" onClick={onOrderClick}>
+        <Button
+          htmlType="button"
+          type="primary"
+          size="large"
+          disabled={isOrderLoading}
+          onClick={onOrderClick}
+        >
           Оформить заказ
         </Button>
       </div>

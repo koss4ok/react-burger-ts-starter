@@ -8,7 +8,7 @@ import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredi
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
-import { useGetIngredientsQuery } from '@services/burger-api';
+import { useCreateOrderMutation, useGetIngredientsQuery } from '@services/burger-api';
 import { setSelectedIngredient } from '@services/ingredient-slice';
 
 import type { AppDispatch, RootState } from '@services/store';
@@ -18,6 +18,8 @@ import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
   const { data: ingredients = [], isLoading, error } = useGetIngredientsQuery();
+  const [createOrder, { isLoading: isOrderLoading, error: orderError }] =
+    useCreateOrderMutation();
   const dispatch = useDispatch<AppDispatch>();
   const selectedIngredient = useSelector(
     (state: RootState) => state.ingredient.selectedIngredient
@@ -26,6 +28,7 @@ export const App = (): React.JSX.Element => {
     []
   );
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [orderNumber, setOrderNumber] = useState<number | null>(null);
 
   const addIngredient = useCallback((ingredient: TIngredient): void => {
     setConstructorIngredients((currentIngredients) => {
@@ -62,7 +65,30 @@ export const App = (): React.JSX.Element => {
     dispatch(setSelectedIngredient(null));
   }, [dispatch]);
   const closeOrderModal = useCallback((): void => setIsOrderModalOpen(false), []);
-  const openOrderModal = useCallback((): void => setIsOrderModalOpen(true), []);
+  const openOrderModal = useCallback(async (): Promise<void> => {
+    const bun = constructorIngredients.find((ingredient) => ingredient.type === 'bun');
+
+    if (!bun || isOrderLoading) {
+      return;
+    }
+
+    try {
+      const response = await createOrder({
+        ingredients: [
+          bun._id,
+          ...constructorIngredients
+            .filter((ingredient) => ingredient.type !== 'bun')
+            .map((ingredient) => ingredient._id),
+          bun._id,
+        ],
+      }).unwrap();
+
+      setOrderNumber(response.order.number);
+      setIsOrderModalOpen(true);
+    } catch {
+      setIsOrderModalOpen(false);
+    }
+  }, [constructorIngredients, createOrder, isOrderLoading]);
 
   if (isLoading) {
     return <Preloader />;
@@ -89,17 +115,21 @@ export const App = (): React.JSX.Element => {
           ingredients={constructorIngredients}
           onRemoveIngredient={removeIngredient}
           onReorderIngredients={reorderIngredients}
-          onOrderClick={openOrderModal}
+          onOrderClick={() => {
+            void openOrderModal();
+          }}
+          isOrderLoading={isOrderLoading}
         />
       </main>
+      {orderError && <p role="alert">Не удалось оформить заказ</p>}
       {selectedIngredient && (
         <Modal title="Детали ингредиента" onClose={closeIngredientModal}>
           <IngredientDetails ingredient={selectedIngredient} />
         </Modal>
       )}
-      {isOrderModalOpen && (
+      {isOrderModalOpen && orderNumber !== null && (
         <Modal onClose={closeOrderModal}>
-          <OrderDetails />
+          <OrderDetails orderNumber={orderNumber} />
         </Modal>
       )}
     </div>
