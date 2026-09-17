@@ -1,5 +1,5 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { BurgerConstructor } from '@components/burger-constructor/burger-constructor';
@@ -7,36 +7,19 @@ import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredi
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
-import { getIngredients } from '@utils/api';
+import { useGetIngredientsQuery } from '@services/burger-api';
 
 import type { TIngredient } from '@utils/types';
 
 import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
-  const [ingredients, setIngredients] = useState<TIngredient[]>([]);
+  const { data: ingredients = [], isLoading, error } = useGetIngredientsQuery();
   const [constructorIngredients, setConstructorIngredients] = useState<TIngredient[]>(
     []
   );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedIngredient, setSelectedIngredient] = useState<TIngredient | null>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-
-  useEffect(() => {
-    getIngredients()
-      .then((data) => {
-        setIngredients(data);
-      })
-      .catch((requestError: unknown) => {
-        setError(
-          requestError instanceof Error
-            ? requestError.message
-            : 'Не удалось загрузить ингредиенты'
-        );
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
 
   const addIngredient = useCallback((ingredient: TIngredient): void => {
     setConstructorIngredients((currentIngredients) => {
@@ -76,7 +59,7 @@ export const App = (): React.JSX.Element => {
   }
 
   if (error) {
-    return <p>{error}</p>;
+    return <p>Не удалось загрузить ингредиенты</p>;
   }
 
   return (
