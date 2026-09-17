@@ -1,5 +1,6 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
 import { useCallback, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { BurgerConstructor } from '@components/burger-constructor/burger-constructor';
@@ -8,17 +9,22 @@ import { IngredientDetails } from '@components/ingredient-details/ingredient-det
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
 import { useGetIngredientsQuery } from '@services/burger-api';
+import { setSelectedIngredient } from '@services/ingredient-slice';
 
+import type { AppDispatch, RootState } from '@services/store';
 import type { TIngredient } from '@utils/types';
 
 import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
   const { data: ingredients = [], isLoading, error } = useGetIngredientsQuery();
+  const dispatch = useDispatch<AppDispatch>();
+  const selectedIngredient = useSelector(
+    (state: RootState) => state.ingredient.selectedIngredient
+  );
   const [constructorIngredients, setConstructorIngredients] = useState<TIngredient[]>(
     []
   );
-  const [selectedIngredient, setSelectedIngredient] = useState<TIngredient | null>(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   const addIngredient = useCallback((ingredient: TIngredient): void => {
@@ -47,10 +53,14 @@ export const App = (): React.JSX.Element => {
   }, []);
 
   const selectIngredient = useCallback(
-    (ingredient: TIngredient): void => setSelectedIngredient(ingredient),
-    []
+    (ingredient: TIngredient): void => {
+      dispatch(setSelectedIngredient(ingredient));
+    },
+    [dispatch]
   );
-  const closeIngredientModal = useCallback((): void => setSelectedIngredient(null), []);
+  const closeIngredientModal = useCallback((): void => {
+    dispatch(setSelectedIngredient(null));
+  }, [dispatch]);
   const closeOrderModal = useCallback((): void => setIsOrderModalOpen(false), []);
   const openOrderModal = useCallback((): void => setIsOrderModalOpen(true), []);
 
