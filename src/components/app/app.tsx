@@ -8,7 +8,11 @@ import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredi
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
-import { removeIngredient, reorderIngredients } from '@services/constructor-slice';
+import {
+  addIngredient,
+  moveIngredient,
+  removeIngredient,
+} from '@services/constructor-slice';
 import {
   clearSelectedIngredient,
   setSelectedIngredient,
@@ -25,8 +29,9 @@ export const App = (): React.JSX.Element => {
   const dispatch = useDispatch<AppDispatch>();
   const ingredients = useSelector((state: RootState) => state.ingredients.items);
   const { isLoading, error } = useSelector((state: RootState) => state.ingredients);
+  const bun = useSelector((state: RootState) => state.burgerConstructor.bun);
   const constructorIngredients = useSelector(
-    (state: RootState) => state.burgerConstructor.items
+    (state: RootState) => state.burgerConstructor.ingredients
   );
   const selectedIngredient = useSelector(
     (state: RootState) => state.ingredient.selectedIngredient
@@ -42,16 +47,21 @@ export const App = (): React.JSX.Element => {
     void dispatch(loadIngredients());
   }, [dispatch]);
 
-  const removeConstructorIngredient = useCallback(
-    (index: number): void => {
-      dispatch(removeIngredient(index));
+  const addConstructorIngredient = useCallback(
+    (ingredient: TIngredient): void => {
+      dispatch(addIngredient(ingredient));
     },
     [dispatch]
   );
-
-  const reorderConstructorIngredients = useCallback(
-    (nextIngredients: TIngredient[]): void => {
-      dispatch(reorderIngredients(nextIngredients));
+  const removeConstructorIngredient = useCallback(
+    (uuid: string): void => {
+      dispatch(removeIngredient(uuid));
+    },
+    [dispatch]
+  );
+  const moveConstructorIngredient = useCallback(
+    (draggedUuid: string, targetUuid: string): void => {
+      dispatch(moveIngredient({ draggedUuid, targetUuid }));
     },
     [dispatch]
   );
@@ -70,8 +80,6 @@ export const App = (): React.JSX.Element => {
     setIsOrderModalOpen(false);
   }, [dispatch]);
   const openOrderModal = useCallback(async (): Promise<void> => {
-    const bun = constructorIngredients.find((ingredient) => ingredient.type === 'bun');
-
     if (!bun || isOrderLoading) {
       return;
     }
@@ -80,9 +88,7 @@ export const App = (): React.JSX.Element => {
       await dispatch(
         submitOrder([
           bun._id,
-          ...constructorIngredients
-            .filter((ingredient) => ingredient.type !== 'bun')
-            .map((ingredient) => ingredient._id),
+          ...constructorIngredients.map((ingredient) => ingredient._id),
           bun._id,
         ])
       ).unwrap();
@@ -90,7 +96,7 @@ export const App = (): React.JSX.Element => {
     } catch {
       setIsOrderModalOpen(false);
     }
-  }, [constructorIngredients, dispatch, isOrderLoading]);
+  }, [bun, constructorIngredients, dispatch, isOrderLoading]);
 
   if (isLoading) {
     return <Preloader />;
@@ -109,13 +115,17 @@ export const App = (): React.JSX.Element => {
       <main className={`${styles.main} pl-5 pr-5`}>
         <BurgerIngredients
           ingredients={ingredients}
-          selectedIngredients={constructorIngredients}
+          selectedIngredients={
+            bun ? [bun, ...constructorIngredients] : constructorIngredients
+          }
           onIngredientClick={selectIngredient}
         />
         <BurgerConstructor
+          bun={bun}
           ingredients={constructorIngredients}
+          onAddIngredient={addConstructorIngredient}
+          onMoveIngredient={moveConstructorIngredient}
           onRemoveIngredient={removeConstructorIngredient}
-          onReorderIngredients={reorderConstructorIngredients}
           onOrderClick={() => {
             void openOrderModal();
           }}

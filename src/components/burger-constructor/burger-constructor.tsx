@@ -2,136 +2,192 @@ import {
   Button,
   ConstructorElement,
   CurrencyIcon,
-  DragIcon,
 } from '@krgaa/react-developer-burger-ui-components';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useRef } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 
+import type { TConstructorIngredient } from '@services/constructor-slice';
 import type { TIngredient } from '@utils/types';
 
 import styles from './burger-constructor.module.css';
 
 type TBurgerConstructorProps = {
-  ingredients: TIngredient[];
-  onRemoveIngredient: (index: number) => void;
-  onReorderIngredients: (ingredients: TIngredient[]) => void;
+  bun: TConstructorIngredient | null;
+  ingredients: TConstructorIngredient[];
+  onAddIngredient: (ingredient: TIngredient) => void;
+  onMoveIngredient: (draggedUuid: string, targetUuid: string) => void;
+  onRemoveIngredient: (uuid: string) => void;
   onOrderClick: () => void;
   isOrderLoading: boolean;
 };
 
+type TConstructorDragItem = {
+  uuid: string;
+};
+
+type TDraggableConstructorIngredientProps = {
+  ingredient: TConstructorIngredient;
+  onMove: (draggedUuid: string, targetUuid: string) => void;
+  onRemove: (uuid: string) => void;
+};
+
+const DraggableConstructorIngredient = ({
+  ingredient,
+  onMove,
+  onRemove,
+}: TDraggableConstructorIngredientProps): React.JSX.Element => {
+  const elementRef = useRef<HTMLDivElement>(null);
+  const [{ isDragging }, drag] = useDrag<
+    TConstructorDragItem,
+    void,
+    { isDragging: boolean }
+  >(
+    () => ({
+      type: 'constructorIngredient',
+      item: { uuid: ingredient.uuid },
+      end: (item, monitor): void => {
+        if (!monitor.didDrop()) {
+          onRemove(item.uuid);
+        }
+      },
+      collect: (monitor): { isDragging: boolean } => ({
+        isDragging: monitor.isDragging(),
+      }),
+    }),
+    [ingredient.uuid, onRemove]
+  );
+  const [{ isOver }, drop] = useDrop<TConstructorDragItem, void, { isOver: boolean }>(
+    () => ({
+      accept: 'constructorIngredient',
+      drop: (item): void => {
+        onMove(item.uuid, ingredient.uuid);
+      },
+      collect: (monitor): { isOver: boolean } => ({ isOver: monitor.isOver() }),
+    }),
+    [ingredient.uuid, onMove]
+  );
+
+  drag(drop(elementRef));
+
+  return (
+    <div
+      ref={elementRef}
+      className={`${styles.filling} ${isOver ? styles.drop_active : ''}`}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+    >
+      <ConstructorElement
+        text={ingredient.name}
+        price={ingredient.price}
+        thumbnail={ingredient.image}
+        handleClose={() => onRemove(ingredient.uuid)}
+        extraClass={styles.element}
+      />
+    </div>
+  );
+};
+
 export const BurgerConstructor = ({
+  bun,
   ingredients,
+  onAddIngredient,
+  onMoveIngredient,
   onRemoveIngredient,
-  onReorderIngredients,
   onOrderClick,
   isOrderLoading,
 }: TBurgerConstructorProps): React.JSX.Element => {
-  const bun = useMemo(
-    () => ingredients.find((ingredient) => ingredient.type === 'bun'),
-    [ingredients]
+  const [{ isOverBun }, bunDrop] = useDrop<TIngredient, void, { isOverBun: boolean }>(
+    () => ({
+      accept: 'ingredient',
+      drop: (ingredient): void => {
+        if (ingredient.type === 'bun') {
+          onAddIngredient(ingredient);
+        }
+      },
+      collect: (monitor): { isOverBun: boolean } => ({
+        isOverBun: monitor.isOver() && monitor.getItem()?.type === 'bun',
+      }),
+    }),
+    [onAddIngredient]
   );
-  const fillings = useMemo(
-    () =>
-      ingredients
-        .map((ingredient, index) => ({ ingredient, index }))
-        .filter(({ ingredient }) => ingredient.type !== 'bun'),
-    [ingredients]
+  const [{ isOverIngredients }, ingredientsDrop] = useDrop<
+    TIngredient,
+    void,
+    { isOverIngredients: boolean }
+  >(
+    () => ({
+      accept: 'ingredient',
+      drop: (ingredient): void => {
+        if (ingredient.type !== 'bun') {
+          onAddIngredient(ingredient);
+        }
+      },
+      collect: (monitor): { isOverIngredients: boolean } => ({
+        isOverIngredients: monitor.isOver() && monitor.getItem()?.type !== 'bun',
+      }),
+    }),
+    [onAddIngredient]
   );
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const totalPrice = useMemo(
     () =>
       (bun ? bun.price * 2 : 0) +
-      fillings.reduce((total, { ingredient }) => total + ingredient.price, 0),
-    [bun, fillings]
-  );
-
-  const removeFilling = useCallback(
-    (index: number): void => {
-      onRemoveIngredient(index);
-    },
-    [onRemoveIngredient]
-  );
-
-  const moveFilling = useCallback(
-    (fromIndex: number, toIndex: number): void => {
-      if (fromIndex === toIndex) {
-        return;
-      }
-
-      const nextFillings = fillings.map(({ ingredient }) => ingredient);
-      const [movedFilling] = nextFillings.splice(fromIndex, 1);
-
-      if (movedFilling) {
-        nextFillings.splice(toIndex, 0, movedFilling);
-        onReorderIngredients(bun ? [bun, ...nextFillings] : nextFillings);
-      }
-    },
-    [bun, fillings, onReorderIngredients]
-  );
-
-  const handleDragStart = useCallback((index: number): void => {
-    setDraggedIndex(index);
-  }, []);
-
-  const handleDrop = useCallback(
-    (index: number): void => {
-      if (draggedIndex !== null) {
-        moveFilling(draggedIndex, index);
-      }
-
-      setDraggedIndex(null);
-    },
-    [draggedIndex, moveFilling]
+      ingredients.reduce((total, ingredient) => total + ingredient.price, 0),
+    [bun, ingredients]
   );
 
   return (
     <section className={styles.burger_constructor}>
-      <div className={styles.bun}>
-        {bun && (
+      <div
+        ref={(element): void => {
+          bunDrop(element);
+        }}
+        className={styles.bun}
+      >
+        {bun ? (
           <ConstructorElement
             type="top"
             isLocked
             text={`${bun.name} (верх)`}
             price={bun.price}
             thumbnail={bun.image}
-            extraClass={styles.element}
+            extraClass={`${styles.element} ${isOverBun ? styles.drop_active : ''}`}
           />
-        )}
-        {!bun && (
-          <div className={`${styles.placeholder} text text_type_main-default`}>
+        ) : (
+          <div
+            className={`${styles.placeholder} text text_type_main-default ${
+              isOverBun ? styles.drop_active : ''
+            }`}
+          >
             Выберите булки
           </div>
         )}
       </div>
-      <div className={`${styles.fillings} custom-scroll`}>
-        {fillings.length === 0 ? (
-          <div className={`${styles.placeholder} text text_type_main-default`}>
+      <div
+        ref={(element): void => {
+          ingredientsDrop(element);
+        }}
+        className={`${styles.fillings} custom-scroll`}
+      >
+        {ingredients.length === 0 ? (
+          <div
+            className={`${styles.placeholder} text text_type_main-default ${
+              isOverIngredients ? styles.drop_active : ''
+            }`}
+          >
             Выберите начинку
           </div>
         ) : (
-          fillings.map(({ ingredient, index: ingredientIndex }, index) => (
-            <div
-              key={`${ingredient._id}-${ingredientIndex}`}
-              className={styles.filling}
-              draggable
-              onDragStart={() => handleDragStart(index)}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={() => handleDrop(index)}
-              onDragEnd={() => setDraggedIndex(null)}
-            >
-              <DragIcon type="primary" />
-              <ConstructorElement
-                text={ingredient.name}
-                price={ingredient.price}
-                thumbnail={ingredient.image}
-                handleClose={() => removeFilling(ingredientIndex)}
-                extraClass={styles.element}
-              />
-            </div>
+          ingredients.map((ingredient) => (
+            <DraggableConstructorIngredient
+              key={ingredient.uuid}
+              ingredient={ingredient}
+              onMove={onMoveIngredient}
+              onRemove={onRemoveIngredient}
+            />
           ))
         )}
       </div>
       <div className={styles.bun}>
-        {bun && (
+        {bun ? (
           <ConstructorElement
             type="bottom"
             isLocked
@@ -140,8 +196,7 @@ export const BurgerConstructor = ({
             thumbnail={bun.image}
             extraClass={styles.element}
           />
-        )}
-        {!bun && (
+        ) : (
           <div className={`${styles.placeholder} text text_type_main-default`}>
             Выберите булки
           </div>
