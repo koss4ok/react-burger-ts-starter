@@ -1,5 +1,6 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDrag } from 'react-dnd';
 
 import type { TIngredient } from '@utils/types';
 
@@ -16,6 +17,57 @@ const groups = [
   { title: 'Соусы', type: 'sauce' },
   { title: 'Начинки', type: 'main' },
 ];
+
+type TDraggableIngredientProps = {
+  ingredient: TIngredient;
+  count: number;
+  onClick: (ingredient: TIngredient) => void;
+};
+
+const DraggableIngredient = ({
+  ingredient,
+  count,
+  onClick,
+}: TDraggableIngredientProps): React.JSX.Element => {
+  const [{ isDragging }, drag] = useDrag<TIngredient, void, { isDragging: boolean }>(
+    () => ({
+      type: 'ingredient',
+      item: ingredient,
+      collect: (monitor): { isDragging: boolean } => ({
+        isDragging: monitor.isDragging(),
+      }),
+    }),
+    [ingredient]
+  );
+
+  return (
+    <li
+      ref={(element): void => {
+        drag(element);
+      }}
+      className={`${styles.card} ${styles.card_clickable}`}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+    >
+      {count > 0 && <Counter count={count} size="default" />}
+      <button
+        className={styles.card_content}
+        type="button"
+        onClick={() => onClick(ingredient)}
+      >
+        <img
+          className={styles.image}
+          src={ingredient.image_large}
+          alt={ingredient.name}
+        />
+        <div className={styles.price}>
+          <span className="text text_type_digits-default">{ingredient.price}</span>
+          <CurrencyIcon type="primary" />
+        </div>
+        <p className={`${styles.name} text text_type_main-default`}>{ingredient.name}</p>
+      </button>
+    </li>
+  );
+};
 
 export const BurgerIngredients = ({
   ingredients,
@@ -94,13 +146,6 @@ export const BurgerIngredients = ({
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const handleIngredientClick = useCallback(
-    (ingredient: TIngredient): void => {
-      onIngredientClick(ingredient);
-    },
-    [onIngredientClick]
-  );
-
   return (
     <section className={styles.burger_ingredients}>
       <nav className={styles.navigation} aria-label="Категории ингредиентов">
@@ -138,37 +183,12 @@ export const BurgerIngredients = ({
               </h2>
               <ul className={styles.cards}>
                 {group.ingredients.map((ingredient) => (
-                  <li
+                  <DraggableIngredient
                     key={ingredient._id}
-                    className={`${styles.card} ${styles.card_clickable}`}
-                  >
-                    {(ingredientCounts.get(ingredient._id) ?? 0) > 0 && (
-                      <Counter
-                        count={ingredientCounts.get(ingredient._id) ?? 0}
-                        size="default"
-                      />
-                    )}
-                    <button
-                      className={styles.card_content}
-                      type="button"
-                      onClick={() => handleIngredientClick(ingredient)}
-                    >
-                      <img
-                        className={styles.image}
-                        src={ingredient.image_large}
-                        alt={ingredient.name}
-                      />
-                      <div className={styles.price}>
-                        <span className="text text_type_digits-default">
-                          {ingredient.price}
-                        </span>
-                        <CurrencyIcon type="primary" />
-                      </div>
-                      <p className={`${styles.name} text text_type_main-default`}>
-                        {ingredient.name}
-                      </p>
-                    </button>
-                  </li>
+                    ingredient={ingredient}
+                    count={ingredientCounts.get(ingredient._id) ?? 0}
+                    onClick={onIngredientClick}
+                  />
                 ))}
               </ul>
             </section>
