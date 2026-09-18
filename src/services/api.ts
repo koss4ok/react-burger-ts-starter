@@ -14,8 +14,22 @@ export type TOrderResponse = {
   success: boolean;
 };
 
+const fetchWithTimeout = async (
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> => {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 10000);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+};
+
 export const fetchIngredients = async (): Promise<TIngredient[]> => {
-  const response = await fetch(`${API_URL}/ingredients`);
+  const response = await fetchWithTimeout(`${API_URL}/ingredients`);
 
   if (!response.ok) {
     throw new Error(`Ошибка загрузки ингредиентов: ${response.status}`);
@@ -26,7 +40,7 @@ export const fetchIngredients = async (): Promise<TIngredient[]> => {
 };
 
 export const createOrder = async (ingredients: string[]): Promise<TOrderResponse> => {
-  const response = await fetch(`${API_URL}/orders`, {
+  const response = await fetchWithTimeout(`${API_URL}/orders`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ingredients }),

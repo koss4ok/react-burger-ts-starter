@@ -72,45 +72,10 @@
   cursor: pointer;
 }
 
-.add_button {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  z-index: 1;
-  display: grid;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  place-items: center;
-  color: var(--text-primary-color);
-  font-size: 28px;
-  line-height: 1;
-  background: var(--colors-interface-accent);
-  border: 0;
-  border-radius: 50%;
-  visibility: hidden;
-  cursor: pointer;
-  transform: translateX(-50%);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.add_button:hover {
-  filter: brightness(1.15);
-}
-
-.card_content:focus-visible,
-.add_button:focus-visible {
+.card_content:focus-visible {
   border-radius: 8px;
   outline: 2px solid var(--colors-interface-accent);
   outline-offset: 6px;
-}
-
-.card:hover .add_button,
-.card:focus-within .add_button {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .image {

@@ -9,7 +9,7 @@ import orderReducer from './order-slice';
 export const store = configureStore({
   reducer: {
     [burgerApi.reducerPath]: burgerApi.reducer,
-    constructor: constructorReducer,
+    burgerConstructor: constructorReducer,
     ingredient: ingredientReducer,
     ingredients: ingredientsReducer,
     order: orderReducer,
