@@ -8,7 +8,6 @@ import styles from './burger-ingredients.module.css';
 type TBurgerIngredientsProps = {
   ingredients: TIngredient[];
   selectedIngredients: TIngredient[];
-  onAddIngredient: (ingredient: TIngredient) => void;
   onIngredientClick: (ingredient: TIngredient) => void;
 };
 
@@ -21,7 +20,6 @@ const groups = [
 export const BurgerIngredients = ({
   ingredients,
   selectedIngredients,
-  onAddIngredient,
   onIngredientClick,
 }: TBurgerIngredientsProps): React.JSX.Element => {
   const [activeTab, setActiveTab] = useState('bun');
@@ -169,17 +167,6 @@ export const BurgerIngredients = ({
                       <p className={`${styles.name} text text_type_main-default`}>
                         {ingredient.name}
                       </p>
-                    </button>
-                    <button
-                      className={styles.add_button}
-                      type="button"
-                      aria-label={`Добавить ${ingredient.name}`}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onAddIngredient(ingredient);
-                      }}
-                    >
-                      +
                     </button>
                   </li>
                 ))}

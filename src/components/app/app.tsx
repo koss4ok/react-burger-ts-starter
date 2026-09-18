@@ -8,11 +8,7 @@ import { BurgerIngredients } from '@components/burger-ingredients/burger-ingredi
 import { IngredientDetails } from '@components/ingredient-details/ingredient-details';
 import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
-import {
-  addIngredient as addConstructorIngredient,
-  removeIngredient,
-  reorderIngredients,
-} from '@services/constructor-slice';
+import { removeIngredient, reorderIngredients } from '@services/constructor-slice';
 import {
   clearSelectedIngredient,
   setSelectedIngredient,
@@ -30,7 +26,7 @@ export const App = (): React.JSX.Element => {
   const ingredients = useSelector((state: RootState) => state.ingredients.items);
   const { isLoading, error } = useSelector((state: RootState) => state.ingredients);
   const constructorIngredients = useSelector(
-    (state: RootState) => state.constructor.items
+    (state: RootState) => state.burgerConstructor.items
   );
   const selectedIngredient = useSelector(
     (state: RootState) => state.ingredient.selectedIngredient
@@ -45,13 +41,6 @@ export const App = (): React.JSX.Element => {
   useEffect(() => {
     void dispatch(loadIngredients());
   }, [dispatch]);
-
-  const addIngredient = useCallback(
-    (ingredient: TIngredient): void => {
-      dispatch(addConstructorIngredient(ingredient));
-    },
-    [dispatch]
-  );
 
   const removeConstructorIngredient = useCallback(
     (index: number): void => {
@@ -121,7 +110,6 @@ export const App = (): React.JSX.Element => {
         <BurgerIngredients
           ingredients={ingredients}
           selectedIngredients={constructorIngredients}
-          onAddIngredient={addIngredient}
           onIngredientClick={selectIngredient}
         />
         <BurgerConstructor
