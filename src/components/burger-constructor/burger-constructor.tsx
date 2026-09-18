@@ -45,11 +45,6 @@ const DraggableConstructorIngredient = ({
     () => ({
       type: 'constructorIngredient',
       item: { uuid: ingredient.uuid },
-      end: (item, monitor): void => {
-        if (!monitor.didDrop()) {
-          onRemove(item.uuid);
-        }
-      },
       collect: (monitor): { isDragging: boolean } => ({
         isDragging: monitor.isDragging(),
       }),
