@@ -96,28 +96,39 @@ export const BurgerConstructor = ({
             extraClass={styles.element}
           />
         )}
+        {!bun && (
+          <div className={`${styles.placeholder} text text_type_main-default`}>
+            Выберите булки
+          </div>
+        )}
       </div>
       <div className={`${styles.fillings} custom-scroll`}>
-        {fillings.map(({ ingredient, index: ingredientIndex }, index) => (
-          <div
-            key={`${ingredient._id}-${ingredientIndex}`}
-            className={styles.filling}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={() => handleDrop(index)}
-            onDragEnd={() => setDraggedIndex(null)}
-          >
-            <DragIcon type="primary" />
-            <ConstructorElement
-              text={ingredient.name}
-              price={ingredient.price}
-              thumbnail={ingredient.image}
-              handleClose={() => removeFilling(ingredientIndex)}
-              extraClass={styles.element}
-            />
+        {fillings.length === 0 ? (
+          <div className={`${styles.placeholder} text text_type_main-default`}>
+            Выберите начинку
           </div>
-        ))}
+        ) : (
+          fillings.map(({ ingredient, index: ingredientIndex }, index) => (
+            <div
+              key={`${ingredient._id}-${ingredientIndex}`}
+              className={styles.filling}
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={() => handleDrop(index)}
+              onDragEnd={() => setDraggedIndex(null)}
+            >
+              <DragIcon type="primary" />
+              <ConstructorElement
+                text={ingredient.name}
+                price={ingredient.price}
+                thumbnail={ingredient.image}
+                handleClose={() => removeFilling(ingredientIndex)}
+                extraClass={styles.element}
+              />
+            </div>
+          ))
+        )}
       </div>
       <div className={styles.bun}>
         {bun && (
@@ -129,6 +140,11 @@ export const BurgerConstructor = ({
             thumbnail={bun.image}
             extraClass={styles.element}
           />
+        )}
+        {!bun && (
+          <div className={`${styles.placeholder} text text_type_main-default`}>
+            Выберите булки
+          </div>
         )}
       </div>
       <div className={styles.order}>
