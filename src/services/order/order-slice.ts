@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-import { createOrder } from './api';
+import { createOrder } from '../api/api';
 
 type TOrderState = {
   number: number | null;

@@ -6,6 +6,7 @@ import type { TIngredient } from '@utils/types';
 
 type TIngredientsResponse = {
   data: TIngredient[];
+  success: boolean;
 };
 
 type TCreateOrderRequest = {
@@ -26,7 +27,13 @@ export const burgerApi = createApi({
   endpoints: (builder) => ({
     getIngredients: builder.query<TIngredient[], void>({
       query: () => '/ingredients',
-      transformResponse: (response: TIngredientsResponse) => response.data,
+      transformResponse: (response: TIngredientsResponse) => {
+        if (!response.success) {
+          throw new Error('Ошибка загрузки ингредиентов');
+        }
+
+        return response.data;
+      },
     }),
     createOrder: builder.mutation<TCreateOrderResponse, TCreateOrderRequest>({
       query: (body) => ({
@@ -34,6 +41,13 @@ export const burgerApi = createApi({
         method: 'POST',
         body,
       }),
+      transformResponse: (response: TCreateOrderResponse) => {
+        if (!response.success) {
+          throw new Error('Ошибка создания заказа');
+        }
+
+        return response;
+      },
     }),
   }),
 });

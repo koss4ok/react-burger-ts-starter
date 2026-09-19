@@ -12,13 +12,13 @@ import {
   addIngredient,
   moveIngredient,
   removeIngredient,
-} from '@services/constructor-slice';
+} from '@services/constructor/constructor-slice';
 import {
   clearSelectedIngredient,
   setSelectedIngredient,
-} from '@services/ingredient-slice';
-import { loadIngredients } from '@services/ingredients-slice';
-import { clearOrder, submitOrder } from '@services/order-slice';
+} from '@services/ingredient/ingredient-slice';
+import { loadIngredients } from '@services/ingredients/ingredients-slice';
+import { clearOrder, submitOrder } from '@services/order/order-slice';
 
 import type { AppDispatch, RootState } from '@services/store';
 import type { TIngredient } from '@utils/types';

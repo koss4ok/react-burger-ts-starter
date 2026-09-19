@@ -4,6 +4,7 @@ import type { TIngredient } from '@utils/types';
 
 type TIngredientsResponse = {
   data: TIngredient[];
+  success: boolean;
 };
 
 export type TOrderResponse = {
@@ -36,6 +37,11 @@ export const fetchIngredients = async (): Promise<TIngredient[]> => {
   }
 
   const data = (await response.json()) as TIngredientsResponse;
+
+  if (!data.success) {
+    throw new Error('Ошибка загрузки ингредиентов');
+  }
+
   return data.data;
 };
 
@@ -50,5 +56,11 @@ export const createOrder = async (ingredients: string[]): Promise<TOrderResponse
     throw new Error(`Ошибка создания заказа: ${response.status}`);
   }
 
-  return (await response.json()) as TOrderResponse;
+  const data = (await response.json()) as TOrderResponse;
+
+  if (!data.success) {
+    throw new Error('Ошибка создания заказа');
+  }
+
+  return data;
 };

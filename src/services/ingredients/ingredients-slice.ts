@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-import { fetchIngredients } from './api';
+import { fetchIngredients } from '../api/api';
 
 import type { TIngredient } from '@utils/types';
 

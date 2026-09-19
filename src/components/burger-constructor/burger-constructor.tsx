@@ -7,9 +7,9 @@ import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { useSelector } from 'react-redux';
 
-import { selectBurgerTotal } from '@services/constructor-selectors';
+import { selectBurgerTotal } from '@services/constructor/constructor-slice';
 
-import type { TConstructorIngredient } from '@services/constructor-slice';
+import type { TConstructorIngredient } from '@services/constructor/constructor-slice';
 import type { TIngredient } from '@utils/types';
 
 import styles from './burger-constructor.module.css';
