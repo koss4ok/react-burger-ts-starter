@@ -1,6 +1,9 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDrag } from 'react-dnd';
+import { useSelector } from 'react-redux';
+
+import { selectIngredientCounts } from '@services/constructor-selectors';
 
 import type { TIngredient } from '@utils/types';
 
@@ -8,7 +11,6 @@ import styles from './burger-ingredients.module.css';
 
 type TBurgerIngredientsProps = {
   ingredients: TIngredient[];
-  selectedIngredients: TIngredient[];
   onIngredientClick: (ingredient: TIngredient) => void;
 };
 
@@ -71,7 +73,6 @@ const DraggableIngredient = ({
 
 export const BurgerIngredients = ({
   ingredients,
-  selectedIngredients,
   onIngredientClick,
 }: TBurgerIngredientsProps): React.JSX.Element => {
   const [activeTab, setActiveTab] = useState('bun');
@@ -86,15 +87,7 @@ export const BurgerIngredients = ({
       })),
     [ingredients]
   );
-  const ingredientCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-
-    selectedIngredients.forEach((ingredient) => {
-      counts.set(ingredient._id, (counts.get(ingredient._id) ?? 0) + 1);
-    });
-
-    return counts;
-  }, [selectedIngredients]);
+  const ingredientCounts = useSelector(selectIngredientCounts);
 
   const updateActiveTab = useCallback((): void => {
     const ingredientsElement = ingredientsRef.current;

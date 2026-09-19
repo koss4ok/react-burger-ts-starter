@@ -115,9 +115,6 @@ export const App = (): React.JSX.Element => {
       <main className={`${styles.main} pl-5 pr-5`}>
         <BurgerIngredients
           ingredients={ingredients}
-          selectedIngredients={
-            bun ? [bun, ...constructorIngredients] : constructorIngredients
-          }
           onIngredientClick={selectIngredient}
         />
         <BurgerConstructor
