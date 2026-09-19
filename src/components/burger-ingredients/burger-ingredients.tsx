@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { useSelector } from 'react-redux';
 
-import { selectIngredientCounts } from '@services/constructor-selectors';
+import { selectIngredientCounts } from '@services/constructor/constructor-slice';
 
 import type { TIngredient } from '@utils/types';
 
