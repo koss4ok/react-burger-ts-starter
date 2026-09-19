@@ -3,8 +3,11 @@ import {
   ConstructorElement,
   CurrencyIcon,
 } from '@krgaa/react-developer-burger-ui-components';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import { useSelector } from 'react-redux';
+
+import { selectBurgerTotal } from '@services/constructor-selectors';
 
 import type { TConstructorIngredient } from '@services/constructor-slice';
 import type { TIngredient } from '@utils/types';
@@ -122,12 +125,7 @@ export const BurgerConstructor = ({
     }),
     [onAddIngredient]
   );
-  const totalPrice = useMemo(
-    () =>
-      (bun ? bun.price * 2 : 0) +
-      ingredients.reduce((total, ingredient) => total + ingredient.price, 0),
-    [bun, ingredients]
-  );
+  const totalPrice = useSelector(selectBurgerTotal);
 
   return (
     <section className={styles.burger_constructor}>
