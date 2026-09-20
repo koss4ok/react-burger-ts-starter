@@ -89,9 +89,7 @@ const constructorSlice = createSlice({
       const [draggedIngredient] = state.ingredients.splice(draggedIndex, 1);
 
       if (draggedIngredient) {
-        const insertionIndex =
-          draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
-        state.ingredients.splice(insertionIndex, 0, draggedIngredient);
+        state.ingredients.splice(targetIndex, 0, draggedIngredient);
       }
     },
   },

@@ -2,6 +2,7 @@ import {
   Button,
   ConstructorElement,
   CurrencyIcon,
+  DragIcon,
 } from '@krgaa/react-developer-burger-ui-components';
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
@@ -73,6 +74,7 @@ const DraggableConstructorIngredient = ({
       className={`${styles.filling} ${isOver ? styles.drop_active : ''}`}
       style={{ opacity: isDragging ? 0.5 : 1 }}
     >
+      <DragIcon type="primary" />
       <ConstructorElement
         text={ingredient.name}
         price={ingredient.price}
@@ -162,7 +164,7 @@ export const BurgerConstructor = ({
       >
         {ingredients.length === 0 ? (
           <div
-            className={`${styles.placeholder} text text_type_main-default ${
+            className={`${styles.placeholder} ${styles.filling_placeholder} text text_type_main-default ${
               isOverIngredients ? styles.drop_active : ''
             }`}
           >
