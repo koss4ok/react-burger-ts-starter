@@ -26,7 +26,6 @@ import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
   const dispatch = useAppDispatch();
-  const ingredients = useAppSelector((state) => state.ingredients.items);
   const { isLoading, error } = useAppSelector((state) => state.ingredients);
   const bun = useAppSelector((state) => state.burgerConstructor.bun);
   const constructorIngredients = useAppSelector(
@@ -112,13 +111,8 @@ export const App = (): React.JSX.Element => {
         Соберите бургер
       </h1>
       <main className={`${styles.main} pl-5 pr-5`}>
-        <BurgerIngredients
-          ingredients={ingredients}
-          onIngredientClick={selectIngredient}
-        />
+        <BurgerIngredients onIngredientClick={selectIngredient} />
         <BurgerConstructor
-          bun={bun}
-          ingredients={constructorIngredients}
           onAddIngredient={addConstructorIngredient}
           onMoveIngredient={moveConstructorIngredient}
           onRemoveIngredient={removeConstructorIngredient}

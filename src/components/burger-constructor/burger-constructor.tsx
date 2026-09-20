@@ -16,8 +16,6 @@ import type { TIngredient } from '@utils/types';
 import styles from './burger-constructor.module.css';
 
 type TBurgerConstructorProps = {
-  bun: TConstructorIngredient | null;
-  ingredients: TConstructorIngredient[];
   onAddIngredient: (ingredient: TIngredient) => void;
   onMoveIngredient: (draggedUuid: string, targetUuid: string) => void;
   onRemoveIngredient: (uuid: string) => void;
@@ -87,14 +85,14 @@ const DraggableConstructorIngredient = ({
 };
 
 export const BurgerConstructor = ({
-  bun,
-  ingredients,
   onAddIngredient,
   onMoveIngredient,
   onRemoveIngredient,
   onOrderClick,
   isOrderLoading,
 }: TBurgerConstructorProps): React.JSX.Element => {
+  const bun = useAppSelector((state) => state.burgerConstructor.bun);
+  const ingredients = useAppSelector((state) => state.burgerConstructor.ingredients);
   const [{ isOverBun }, bunDrop] = useDrop<TIngredient, void, { isOverBun: boolean }>(
     () => ({
       accept: 'ingredient',
