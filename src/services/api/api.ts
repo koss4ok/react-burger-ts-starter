@@ -1,3 +1,4 @@
+import { checkResponse } from '@utils/check-response';
 import { API_URL } from '@utils/constants';
 
 import type { TIngredient } from '@utils/types';
@@ -32,11 +33,7 @@ const fetchWithTimeout = async (
 export const fetchIngredients = async (): Promise<TIngredient[]> => {
   const response = await fetchWithTimeout(`${API_URL}/ingredients`);
 
-  if (!response.ok) {
-    throw new Error(`Ошибка загрузки ингредиентов: ${response.status}`);
-  }
-
-  const data = (await response.json()) as TIngredientsResponse;
+  const data = (await checkResponse(response).json()) as TIngredientsResponse;
 
   if (!data.success) {
     throw new Error('Ошибка загрузки ингредиентов');
@@ -52,11 +49,7 @@ export const createOrder = async (ingredients: string[]): Promise<TOrderResponse
     body: JSON.stringify({ ingredients }),
   });
 
-  if (!response.ok) {
-    throw new Error(`Ошибка создания заказа: ${response.status}`);
-  }
-
-  const data = (await response.json()) as TOrderResponse;
+  const data = (await checkResponse(response).json()) as TOrderResponse;
 
   if (!data.success) {
     throw new Error('Ошибка создания заказа');
