@@ -6,9 +6,9 @@ import {
 } from '@krgaa/react-developer-burger-ui-components';
 import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
-import { useSelector } from 'react-redux';
 
 import { selectBurgerTotal } from '@services/constructor/constructor-slice';
+import { useAppSelector } from '@services/hooks';
 
 import type { TConstructorIngredient } from '@services/constructor/constructor-slice';
 import type { TIngredient } from '@utils/types';
@@ -127,7 +127,7 @@ export const BurgerConstructor = ({
     }),
     [onAddIngredient]
   );
-  const totalPrice = useSelector(selectBurgerTotal);
+  const totalPrice = useAppSelector(selectBurgerTotal);
 
   return (
     <section className={styles.burger_constructor}>
