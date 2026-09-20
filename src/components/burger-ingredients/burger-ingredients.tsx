@@ -1,9 +1,9 @@
 import { Counter, CurrencyIcon, Tab } from '@krgaa/react-developer-burger-ui-components';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDrag } from 'react-dnd';
-import { useSelector } from 'react-redux';
 
 import { selectIngredientCounts } from '@services/constructor/constructor-slice';
+import { useAppSelector } from '@services/hooks';
 
 import type { TIngredient } from '@utils/types';
 
@@ -87,7 +87,7 @@ export const BurgerIngredients = ({
       })),
     [ingredients]
   );
-  const ingredientCounts = useSelector(selectIngredientCounts);
+  const ingredientCounts = useAppSelector(selectIngredientCounts);
 
   const updateActiveTab = useCallback((): void => {
     const ingredientsElement = ingredientsRef.current;

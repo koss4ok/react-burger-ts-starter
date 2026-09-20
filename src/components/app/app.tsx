@@ -1,6 +1,5 @@
 import { Preloader } from '@krgaa/react-developer-burger-ui-components';
 import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { AppHeader } from '@components/app-header/app-header';
 import { BurgerConstructor } from '@components/burger-constructor/burger-constructor';
@@ -13,6 +12,7 @@ import {
   moveIngredient,
   removeIngredient,
 } from '@services/constructor/constructor-slice';
+import { useAppDispatch, useAppSelector } from '@services/hooks';
 import {
   clearSelectedIngredient,
   setSelectedIngredient,
@@ -20,27 +20,26 @@ import {
 import { loadIngredients } from '@services/ingredients/ingredients-slice';
 import { clearOrder, submitOrder } from '@services/order/order-slice';
 
-import type { AppDispatch, RootState } from '@services/store';
 import type { TIngredient } from '@utils/types';
 
 import styles from './app.module.css';
 
 export const App = (): React.JSX.Element => {
-  const dispatch = useDispatch<AppDispatch>();
-  const ingredients = useSelector((state: RootState) => state.ingredients.items);
-  const { isLoading, error } = useSelector((state: RootState) => state.ingredients);
-  const bun = useSelector((state: RootState) => state.burgerConstructor.bun);
-  const constructorIngredients = useSelector(
-    (state: RootState) => state.burgerConstructor.ingredients
+  const dispatch = useAppDispatch();
+  const ingredients = useAppSelector((state) => state.ingredients.items);
+  const { isLoading, error } = useAppSelector((state) => state.ingredients);
+  const bun = useAppSelector((state) => state.burgerConstructor.bun);
+  const constructorIngredients = useAppSelector(
+    (state) => state.burgerConstructor.ingredients
   );
-  const selectedIngredient = useSelector(
-    (state: RootState) => state.ingredient.selectedIngredient
+  const selectedIngredient = useAppSelector(
+    (state) => state.ingredient.selectedIngredient
   );
   const {
     number: orderNumber,
     isLoading: isOrderLoading,
     error: orderError,
-  } = useSelector((state: RootState) => state.order);
+  } = useAppSelector((state) => state.order);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   useEffect(() => {
