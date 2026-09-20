@@ -10,7 +10,6 @@ import type { TIngredient } from '@utils/types';
 import styles from './burger-ingredients.module.css';
 
 type TBurgerIngredientsProps = {
-  ingredients: TIngredient[];
   onIngredientClick: (ingredient: TIngredient) => void;
 };
 
@@ -72,12 +71,12 @@ const DraggableIngredient = ({
 };
 
 export const BurgerIngredients = ({
-  ingredients,
   onIngredientClick,
 }: TBurgerIngredientsProps): React.JSX.Element => {
   const [activeTab, setActiveTab] = useState('bun');
   const ingredientsRef = useRef<HTMLDivElement>(null);
   const headingRefs = useRef<Record<string, HTMLHeadingElement | null>>({});
+  const ingredients = useAppSelector((state) => state.ingredients.items);
 
   const ingredientGroups = useMemo(
     () =>
