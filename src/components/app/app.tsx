@@ -9,6 +9,7 @@ import { Modal } from '@components/modal/modal';
 import { OrderDetails } from '@components/order-details/order-details';
 import {
   addIngredient,
+  clearConstructor,
   moveIngredient,
   removeIngredient,
 } from '@services/constructor/constructor-slice';
@@ -90,6 +91,7 @@ export const App = (): React.JSX.Element => {
           bun._id,
         ])
       ).unwrap();
+      dispatch(clearConstructor());
       setIsOrderModalOpen(true);
     } catch {
       setIsOrderModalOpen(false);
